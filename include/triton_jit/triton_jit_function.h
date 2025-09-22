@@ -52,55 +52,6 @@ struct StaticSignature {
   }
 };
 
-template <typename T>
-T get_next_multiple_of(T pos, T step) {
-  if (pos % step == 0) return pos;
-
-  while (pos % step) {
-    pos++;
-  }
-  return pos;
-}
-
-struct ParameterBuffer {
-  c10::SmallVector<std::byte> buff_;
-  size_t cursor_ = 0;
-  c10::SmallVector<size_t> offsets_;
-  c10::SmallVector<void *> ptrs_;
-
-  void reserve(size_t new_cap) {
-    this->buff_.reserve(new_cap * 4);  // assume 4 bytes / arg
-    this->offsets_.reserve(new_cap);
-  }
-
-  template <typename T>
-  void push_arg(T &&v) {
-    size_t align = alignof(T);
-    size_t offset = get_next_multiple_of(this->cursor_, align);
-    this->offsets_.push_back(offset);
-
-    size_t size = sizeof(T);
-    this->buff_.resize(offset + size);
-    std::byte *ptr = this->buff_.data() + offset;
-    std::memcpy(ptr, &v, size);
-
-    this->cursor_ = offset + size;
-  }
-
-  void **get_ptrs() {
-    this->ptrs_.reserve(this->offsets_.size());
-    std::byte *start = this->buff_.data();
-    for (const size_t off : this->offsets_) {
-      this->ptrs_.push_back(start + off);
-    }
-    return this->ptrs_.data();
-  }
-
-  size_t size() const {
-    return this->offsets_.size();
-  }
-};
-
 /**
  * @brief An class to wrap triton jit function for it to be called in c++.
  *
@@ -295,6 +246,11 @@ struct ArgHandle {
     const char *dtype = triton_type<decltype(item)>::name;
     signature.push_back(dtype);
   }
+
+  void append_global_scratch() {
+    void *global_scratch = nullptr;
+    this->buf.push_arg(global_scratch);
+  }
 };
 
 /***
@@ -336,21 +292,8 @@ void TritonJITFunction::operator()(CUstream stream,
   (handler.handle_arg(args), ...);
 
   // global scratch: introduced in triton 3.3
-  void *global_scratch = nullptr;
-  // data_pointers.push_back(global_scratch);
-  // kernel_args.push_back(&(data_pointers.back()));
-  buffer.push_arg(global_scratch);
-  std::string full_signature;
-  for (int i = 0; i < signature.size(); i++) {
-    if (i == 0) {
-      full_signature += signature[i];
-    } else {
-      full_signature += ",";
-      full_signature += signature[i];
-    }
-  }
-  // LOG(INFO) << fmt::format("full signature is {}", full_signature);
-  // LOG(INFO) << "raw_args_list.size(): " << kernel_args.size() << std::endl;
+  handler.append_global_scratch();
+  std::string full_signature = join_sig(signature);
 
   // TODO: use torch backend-agnostic device APIs
   ensure_cuda_context();

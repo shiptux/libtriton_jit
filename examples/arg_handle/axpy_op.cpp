@@ -119,7 +119,7 @@ at::Tensor axpy3_manual(const at::Tensor &x,
   const TritonJITFunction &f = TritonJITFunction::get_instance(std::string("axpy.py"), "axpy3_kernel");
 
   ParameterBuffer buffer;
-  const int num_args = 3;
+  const int num_args = 6;
   buffer.reserve(num_args);
   c10::SmallVector<std::string> signature;
   signature.reserve(num_args);
@@ -137,31 +137,21 @@ at::Tensor axpy3_manual(const at::Tensor &x,
   handler.handle_arg(alpha);
   handler.handle_arg(n);
   handler.handle_arg(tile_size);
+  handler.append_global_scratch();
 
-  void *global_scratch = nullptr;
-  // data_pointers.push_back(global_scratch);
-  // kernel_args.push_back(&(data_pointers.back()));
-  buffer.push_arg(global_scratch);
-  std::string full_signature;
-  for (int i = 0; i < signature.size(); i++) {
-    if (i == 0) {
-      full_signature += signature[i];
-    } else {
-      full_signature += ",";
-      full_signature += signature[i];
-    }
-  }
+  std::string full_signature = join_sig(signature);
 
   const unsigned int num_blocks = (n + tile_size - 1) / tile_size;
   // getCurrentCUDAStream ensures that the stream is initialized, a default stream for each device
-  c10::cuda::CUDAStream stream = c10::cuda::getCurrentCUDAStream();
+
+  ensure_cuda_context();
   c10::DeviceGuard guard(out.device());
+  c10::cuda::CUDAStream stream = c10::cuda::getCurrentCUDAStream();
   CUstream raw_stream = static_cast<CUstream>(stream.stream());
 
-  // TODO: use torch backend-agnostic device APIs
-  ensure_cuda_context();
   CUdevice device_index;
   checkCudaErrors(cuCtxGetDevice(&device_index));
+
   const TritonKernel &kernel = f.get_kernel(full_signature, num_warps, num_stages, device_index);
   kernel.launch(num_blocks, 1, 1, num_warps, stream, buffer.get_ptrs());
   return out;
@@ -171,11 +161,13 @@ TORCH_LIBRARY(my_ops, m) {
   m.def("axpy(Tensor self, Tensor other, Scalar alpha) -> Tensor");
   m.def("axpy2(Tensor self, Tensor other, Scalar? alpha) -> Tensor");
   m.def("axpy3(Tensor self, Tensor? other, Scalar? alpha) -> Tensor");
+  m.def("axpy3_manual(Tensor self, Tensor? other, Scalar? alpha) -> Tensor");
 }
 
 TORCH_LIBRARY_IMPL(my_ops, CUDA, m) {
   m.impl("axpy", TORCH_FN(axpy));
   m.impl("axpy2", TORCH_FN(axpy2));
   m.impl("axpy3", TORCH_FN(axpy3));
+  m.impl("axpy3_manual", TORCH_FN(axpy3_manual));
 }
 }  // namespace my_ops
