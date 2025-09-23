@@ -197,8 +197,6 @@ struct ArgHandle {
     // Assumuption: Tensor is never constexpr
     TORCH_CHECK(this->ssig.at(idx) != ArgType::CONSTEXPR);
     void *p_item = item.data_ptr();
-    // data_pointers.push_back(p_item);
-    // kernel_args.push_back(&(data_pointers.back()));
     this->buf.push_arg(p_item);
     const char *dtype = to_triton_typename(item.scalar_type());
 
@@ -221,17 +219,11 @@ struct ArgHandle {
     if constexpr (std::is_integral_v<std::remove_cv_t<std::remove_reference_t<decltype(item)>>>) {
       const char *specialization = spec(item);
       if (specialization != ":1") {
-        // const void *p_item = &item;
-        // cuLaunchKernel requires `void*`, so if the argument is const,
-        // we need to const_cast to remove the const qualifier to call it
-        // kernel_args.push_back(const_cast<void *>(p_item));
         this->buf.push_arg(item);
       }
       std::string sig_for_idx = fmt::format("{}{}", dtype, specialization);
       signature.push_back(sig_for_idx);
     } else {
-      // const void *p_item = &item;
-      // kernel_args.push_back(const_cast<void *>(p_item));
       this->buf.push_arg(item);
       std::string sig_for_idx = fmt::format("{}", dtype);
       signature.push_back(sig_for_idx);
@@ -240,8 +232,6 @@ struct ArgHandle {
 
   template <typename T>
   void handle_non_constexpr(const T &item) {
-    // const void *p_item = &item;
-    // kernel_args.push_back(const_cast<void *>(p_item));
     this->buf.push_arg(item);
     const char *dtype = triton_type<decltype(item)>::name;
     signature.push_back(dtype);
@@ -275,14 +265,6 @@ void TritonJITFunction::operator()(CUstream stream,
                                    Args... args) const {
   const int num_args = this->static_sig_.num_args;
 
-  // since we need to take address of all the arguemnts to the kernel to launch a kernel
-  // but data pointers are not the arguement of the function operator(), they are local variables
-  // that are created in `arg_handle`, to take the addresses of them, we need to keep them alive
-  // out of the function
-  // c10::SmallVector<void *> data_pointers;
-  // data_pointers.reserve(num_args);
-  // c10::SmallVector<void *> kernel_args;
-  // kernel_args.reserve(num_args);
   ParameterBuffer buffer;
   buffer.reserve(num_args);  // this is a coarse estimation of parameter size
   c10::SmallVector<std::string> signature;

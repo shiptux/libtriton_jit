@@ -13,12 +13,7 @@ class TritonJITFunction;
 
 template <typename T>
 T get_next_multiple_of(T pos, T step) {
-  if (pos % step == 0) return pos;
-
-  while (pos % step) {
-    pos++;
-  }
-  return pos;
+  return ((pos + step - 1) / step) * step;
 }
 
 struct ParameterBuffer {
@@ -34,11 +29,13 @@ struct ParameterBuffer {
 
   template <typename T>
   void push_arg(T &&v) {
-    size_t align = alignof(T);
+    using U = std::decay_t<T>;
+    static_assert(std::is_trivially_copyable_v<U>, "Non trivially copyable type");
+    size_t align = alignof(U);
     size_t offset = get_next_multiple_of(this->cursor_, align);
     this->offsets_.push_back(offset);
 
-    size_t size = sizeof(T);
+    size_t size = sizeof(U);
     this->buff_.resize(offset + size);
     std::byte *ptr = this->buff_.data() + offset;
     std::memcpy(ptr, &v, size);
