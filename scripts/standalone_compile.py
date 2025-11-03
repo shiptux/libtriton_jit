@@ -162,6 +162,8 @@ def _compile_a_kernel(
         )
     elif triton_version.major == 3 and triton_version.minor == 3:
         attrs = {(k,): [["tt.divisibility", 16]] for k, v in hints.items() if v == 16}
+    elif triton_version.major == 3 and triton_version.minor == 4:
+        attrs = {(k,): [["tt.divisibility", 16]] for k, v in hints.items() if v == 16}
     else:
         raise RuntimeError(
             "Triton may change APIs, we cannot ensure compatibility here now."
