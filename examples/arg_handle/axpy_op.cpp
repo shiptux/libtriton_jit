@@ -137,7 +137,7 @@ at::Tensor axpy3_manual(const at::Tensor &x,
   handler.handle_arg(alpha);
   handler.handle_arg(n);
   handler.handle_arg(tile_size);
-  handler.append_global_scratch();
+  handler.append_scratch();
 
   std::string full_signature = join_sig(signature);
 
