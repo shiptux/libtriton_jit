@@ -66,7 +66,7 @@ at::Tensor add_tensor_manual_arg_handle(const at::Tensor &a_, const at::Tensor &
   handler.handle_arg(out);
   handler.handle_arg(n);
   handler.handle_arg(tile_size);
-  handler.append_global_scratch();
+  handler.append_scratch();
 
   std::string full_signature = join_sig(signature);
 

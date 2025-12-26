@@ -237,9 +237,13 @@ struct ArgHandle {
     signature.push_back(dtype);
   }
 
-  void append_global_scratch() {
+  void append_scratch() {
     void *global_scratch = nullptr;
     this->buf.push_arg(global_scratch);
+#ifdef TRITON_GE_3P5
+    void *profile_scratch = nullptr;
+    this->buf.push_arg(profile_scratch);
+#endif
   }
 };
 
@@ -274,7 +278,7 @@ void TritonJITFunction::operator()(CUstream stream,
   (handler.handle_arg(args), ...);
 
   // global scratch: introduced in triton 3.3
-  handler.append_global_scratch();
+  handler.append_scratch();
   std::string full_signature = join_sig(signature);
 
   // TODO: use torch backend-agnostic device APIs
