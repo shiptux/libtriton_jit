@@ -6,6 +6,7 @@
 # then it can use the same cxx flags with public dependency transitivity
 # --------------------------- triton jit function ---------------------------
 add_library(triton_jit SHARED triton_jit_function.cpp jit_utils.cpp triton_kernel.cpp)
+target_compile_definitions(triton_jit PRIVATE TRITON_GE_3P5="${TRITON_GE_3P5}")
 target_include_directories(triton_jit
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

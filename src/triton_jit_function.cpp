@@ -11,6 +11,8 @@
 #include "fmt/core.h"
 #include "nlohmann/json.hpp"
 
+#include "pybind11/embed.h"
+
 namespace triton_jit {
 std::unordered_map<std::string, TritonJITFunction> TritonJITFunction::functions_;
 

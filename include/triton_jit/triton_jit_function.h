@@ -24,8 +24,6 @@
 #include "triton_jit/jit_utils.h"
 #include "triton_jit/triton_kernel.h"
 
-#include "pybind11/embed.h"
-
 namespace triton_jit {
 
 /**
@@ -238,34 +236,21 @@ struct ArgHandle {
     const char *dtype = triton_type<decltype(item)>::name;
     signature.push_back(dtype);
   }
-
-  std::pair<int, int> get_triton_version() {
-    namespace py = pybind11;
-    c10::initLogging();
-    if (!Py_IsInitialized()) {
-      Py_InitializeEx(false);
-    }
-    py::gil_scoped_acquire gil;
-    py::module_ sys = py::module_::import("triton");
-    py::object version = sys.attr("__version__");
-    // Extract major and minor version numbers
-    std::string version_str = version.cast<std::string>();
-    int major = 0;
-    int minor = 0;
-    int patch = 0;
-    std::sscanf(version_str.c_str(), "%d.%d.%d", &major, &minor, &patch);
-    return {major, minor};
-  }
-
+#ifdef TRITON_GE_3P5
   void append_scratch() {
-    auto [major, minor] = get_triton_version();
+    std::cout << "TRITON_GE_3P5 TRUE" << std::endl;
     void *global_scratch = nullptr;
     this->buf.push_arg(global_scratch);
-    if (major == 3 && minor >= 5) {
-      void *profile_scratch = nullptr;
-      this->buf.push_arg(profile_scratch);
-    }
+    void *profile_scratch = nullptr;
+    this->buf.push_arg(profile_scratch);
   }
+#else
+  void append_scratch() {
+    std::cout << "TRITON_GE_3P5 FALSE" << std::endl;
+    void *global_scratch = nullptr;
+    this->buf.push_arg(global_scratch);
+  }
+#endif
 };
 
 /***
