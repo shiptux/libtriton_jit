@@ -432,19 +432,61 @@ class TritonJITFunctionImpl {
                             unsigned int grid_z,
                             unsigned int num_warps,
                             unsigned int num_stages,
-                            std::string full_signature,
+                            const std::string& full_signature,
                             void** args,
                             size_t num_args = 0) const {
+    // Cache the kernel pointer to amortise get_kernel() lookup on this hot path.
+    // Compile options and the active device are part of the cache identity.
+    // launch_with_raw_args is the hot path; avoid fmt::format + map lookup.
+    using KernelPtr = const TritonKernelImpl<Backend>*;
+    struct CacheEntry {
+      std::string full_signature;
+      unsigned int num_warps = 0;
+      unsigned int num_stages = 0;
+      int device_index = -1;
+      KernelPtr kernel = nullptr;
+    };
+    thread_local static std::unordered_map<const TritonJITFunctionImpl*, CacheEntry> tl_cache;
+
     Backend::ensure_context();
     int device_index = Backend::get_device_index();
+    auto& entry = tl_cache[this];
+    KernelPtr cached_kernel = nullptr;
+    if (entry.kernel != nullptr && entry.full_signature == full_signature &&
+        entry.num_warps == num_warps && entry.num_stages == num_stages &&
+        entry.device_index == device_index) {
+      cached_kernel = entry.kernel;
+    }
 
+    if (cached_kernel == nullptr) {
+      CompileOptions copts;
+      copts.num_warps = static_cast<int>(num_warps);
+      copts.num_stages = static_cast<int>(num_stages);
+      const TritonKernelImpl<Backend>& kernel =
+          this->get_kernel(full_signature, copts, device_index);
+      cached_kernel = &kernel;
+      entry.full_signature = full_signature;
+      entry.num_warps = num_warps;
+      entry.num_stages = num_stages;
+      entry.device_index = device_index;
+      entry.kernel = cached_kernel;
+    }
+
+    cached_kernel->launch_with_signature(
+        grid_x, grid_y, grid_z, num_warps, stream, args, full_signature, num_args);
+  }
+
+  /// Pre-compile the kernel without launching.
+  /// Useful during plan creation to ensure first exec does not trigger Python compilation.
+  void compile(const std::string& full_signature,
+               unsigned int num_warps,
+               unsigned int num_stages,
+               int device_index) const {
+    Backend::ensure_context();
     CompileOptions copts;
     copts.num_warps = static_cast<int>(num_warps);
     copts.num_stages = static_cast<int>(num_stages);
-    const TritonKernelImpl<Backend>& kernel =
-        this->get_kernel(full_signature, copts, device_index);
-
-    kernel.launch_with_signature(grid_x, grid_y, grid_z, num_warps, stream, args, full_signature, num_args);
+    this->get_kernel(full_signature, copts, device_index);
   }
 
  private:
