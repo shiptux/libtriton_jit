@@ -4,15 +4,11 @@
 name: Test Nexus caller
 
 on:
-  workflow_dispatch:
-    inputs:
-      run_id:
-        description: 'Build workflow run ID (optional)'
-        required: false
+  pull_request:
+    branches: [master]
+    paths: ['.github/workflows/test-nexus-caller.yml']
 
 jobs:
   upload:
     uses: shiptux/build-infra/.github/workflows/upload-nexus.yml@ci/upload-nexus
-    with:
-      run_id: ${{ github.event.inputs.run_id }}
     secrets: inherit
