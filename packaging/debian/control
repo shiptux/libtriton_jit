@@ -7,7 +7,8 @@ Build-Depends: debhelper-compat (= 13),
                ninja-build,
                patchelf,
                python3-dev,
-               libfmt-dev (>= 8.1.1)
+               libfmt-dev (>= 8.1.1),
+               nlohmann-json3-dev (>= 3.10.5)
 Standards-Version: 4.6.2
 Homepage: https://github.com/flagos-ai/libtriton_jit
 Vcs-Browser: https://github.com/flagos-ai/libtriton_jit
@@ -20,8 +21,8 @@ X-Build-Environment: This package is designed to be built in a CUDA container
  - PyTorch (>= 2.7.0) and Triton (>= 3.10.0) via pip
  - pybind11 via pip
  - fmt from the distro libfmt-dev (>= 8.1.1, only fmt::format is used)
- - nlohmann-json 3.11.3 is downloaded via CMake FetchContent at build
-   time (the distro version is too old)
+ - nlohmann-json from the distro nlohmann-json3-dev (>= 3.10.5, only
+   basic json APIs are used)
  .
  The Build-Depends listed above are for the Debian packaging tools only.
  CUDA and Python dependencies are provided by the container environment.

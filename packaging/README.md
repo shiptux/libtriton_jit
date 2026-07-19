@@ -81,6 +81,6 @@ FlagOS NVIDIA environment:
 
 ## Notes
 
-- pybind11 is supplied externally (via pip); nlohmann-json and fmt are downloaded via CMake FetchContent at build time (the distro versions are too old)
+- pybind11 is supplied externally (via pip); fmt and nlohmann-json come from the distro packages (libfmt-dev >= 8.1.1, nlohmann-json3-dev >= 3.10.5) for the deb build; the RPM build still fetches them via FetchContent (the Rocky Linux base repos do not provide suitable versions)
 - RPATH is removed from the shared libraries during packaging
 - Examples are not built in the packages to reduce build time

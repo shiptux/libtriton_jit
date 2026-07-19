@@ -4,6 +4,8 @@ libtriton-jit (0.1.0-2) unstable; urgency=medium
     fmt via FetchContent (upstream relaxed the fmt floor to 8.1.1)
   * Drop the bundled fmt files from libtriton-jit-nvidia-dev and replace
     Conflicts: libfmt-dev with a Depends on it
+  * Build against the system nlohmann-json3-dev (>= 3.10.5) instead of
+    downloading json via FetchContent (upstream relaxed the floor)
 
  -- The FlagOS Contributors <contact@flagos.io>  Sun, 19 Jul 2026 12:00:00 +0800
 
