@@ -20,6 +20,10 @@
 
 name: Build Debian Packages
 
+# PRs trigger this only for packaging-file changes; source changes do
+# not - packaging currently covers only selected backends, so source
+# PRs (often targeting other vendors' hardware) should not be gated
+# or delayed by a package build.
 on:
   push:
     tags:
@@ -27,8 +31,6 @@ on:
   pull_request:
     branches: [ main, master, multi-backend ]
     paths:
-      - 'src/**'
-      - 'CMakeLists.txt'
       - 'packaging/debian/**'
       - '.github/workflows/build-deb.yml'
   workflow_dispatch:
