@@ -7,8 +7,8 @@
 #
 # Ubuntu 22.04 ships cmake 3.22 (< the 3.25 this project requires) and
 # nlohmann-json 3.10.5 (< 3.11.3), so cmake comes from pip and json is
-# fetched at build time (see debian/rules USE_EXTERNAL_JSON=OFF). fmt is
-# fetched too (USE_EXTERNAL_FMTLIB=OFF).
+# fetched at build time (see debian/rules USE_EXTERNAL_JSON=OFF). fmt
+# comes from the distro libfmt-dev (USE_EXTERNAL_FMTLIB=ON).
 
 ARG BASE_IMAGE=nvidia/cuda:12.8.0-devel-ubuntu22.04
 FROM ${BASE_IMAGE} AS builder
@@ -26,7 +26,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # minor must match the consuming container, which is 3.12).
 RUN apt-get update && apt-get install -y --no-install-recommends \
         software-properties-common curl ca-certificates git \
-        build-essential ninja-build patchelf \
+        build-essential ninja-build patchelf libfmt-dev \
         debhelper devscripts dpkg-dev fakeroot \
     && add-apt-repository -y ppa:deadsnakes/ppa && apt-get update \
     && apt-get install -y --no-install-recommends \

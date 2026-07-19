@@ -48,8 +48,10 @@ docker build --build-arg BASE_IMAGE=nvidia/cuda:12.6.0-devel-rockylinux9 -f Dock
 ### libtriton-jit-nvidia-dev (Development Package)
 - `/usr/include/triton_jit/` - Header files
 - `/usr/lib/*/cmake/TritonJIT/` - CMake configuration files
-- `/usr/include/fmt/`, `/usr/lib/*/libfmt.a`, `/usr/lib/*/cmake/fmt/` -
-  bundled fmt (built via FetchContent; hence `Conflicts: libfmt-dev`)
+- depends on the distro `libfmt-dev` (>= 8.1.1) for the fmt headers the
+  exported CMake target references (no more bundled fmt or
+  `Conflicts: libfmt-dev`; the RPM package still bundles fmt because the
+  Rocky Linux fmt is too old)
 
 ## GitHub Actions
 
