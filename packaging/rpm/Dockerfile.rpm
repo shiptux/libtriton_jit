@@ -14,6 +14,8 @@ RUN dnf install -y epel-release && \
     python3-devel \
     python3-pip \
     patchelf \
+    fmt-devel \
+    json-devel \
     git \
     && dnf clean all
 

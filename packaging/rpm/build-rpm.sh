@@ -17,7 +17,7 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_step() { echo -e "${BLUE}[STEP]${NC} $1"; }
 
 # Default values
-BASE_IMAGE="nvidia/cuda:12.4.0-devel-rockylinux8"
+BASE_IMAGE="nvidia/cuda:12.6.0-devel-rockylinux9"
 OUTPUT_DIR=""
 
 # Parse arguments

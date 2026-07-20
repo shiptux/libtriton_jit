@@ -50,8 +50,8 @@ docker build --build-arg BASE_IMAGE=nvidia/cuda:12.6.0-devel-rockylinux9 -f Dock
 - `/usr/lib/*/cmake/TritonJIT/` - CMake configuration files
 - depends on the distro `libfmt-dev` (>= 8.1.1) for the fmt headers the
   exported CMake target references (no more bundled fmt or
-  `Conflicts: libfmt-dev`; the RPM package still bundles fmt because the
-  Rocky Linux fmt is too old)
+  `Conflicts: libfmt-dev`; the RPM -devel package likewise depends on
+  EPEL `fmt-devel`)
 
 ## GitHub Actions
 
@@ -81,6 +81,6 @@ FlagOS NVIDIA environment:
 
 ## Notes
 
-- pybind11 is supplied externally (via pip); fmt and nlohmann-json come from the distro packages (libfmt-dev >= 8.1.1, nlohmann-json3-dev >= 3.10.5) for the deb build; the RPM build still fetches them via FetchContent (the Rocky Linux base repos do not provide suitable versions)
+- pybind11 is supplied externally (via pip); fmt and nlohmann-json come from the distro packages (libfmt-dev >= 8.1.1, nlohmann-json3-dev >= 3.10.5) for the deb build; the RPM build uses fmt-devel (>= 8.1.1) and json-devel from EPEL (already enabled in the build container)
 - RPATH is removed from the shared libraries during packaging
 - Examples are not built in the packages to reduce build time

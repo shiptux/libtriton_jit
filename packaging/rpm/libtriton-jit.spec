@@ -1,10 +1,9 @@
 Name:           libtriton-jit-nvidia
 Version:        0.1.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Triton JIT runtime library
 
 License:        MIT
-# Note: bundled fmt (MIT with optional exception) is included in the devel subpackage
 URL:            https://github.com/flagos-ai/libtriton_jit
 Source0:        libtriton-jit-%{version}.tar.gz
 
@@ -14,6 +13,9 @@ BuildRequires:  ninja-build
 BuildRequires:  gcc-c++
 BuildRequires:  python3-devel
 BuildRequires:  patchelf
+# fmt and nlohmann-json from EPEL (enabled in the build container)
+BuildRequires:  fmt-devel >= 8.1.1
+BuildRequires:  json-devel >= 3.10.5
 
 %description
 libtriton_jit is a C++ library providing Triton JIT runtime functionality.
@@ -22,7 +24,8 @@ It enables just-in-time compilation of Triton kernels for GPU acceleration.
 %package devel
 Summary:        Development files for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
-Conflicts:      fmt-devel
+# the exported CMake target links fmt::fmt-header-only
+Requires:       fmt-devel >= 8.1.1
 
 %description devel
 Development files (headers and CMake configs) for libtriton_jit.
@@ -43,8 +46,8 @@ TORCH_CMAKE_PATH=$(python3 -c "import importlib.util; s=importlib.util.find_spec
     -DCMAKE_CUDA_FLAGS="-Xcompiler -fPIE" \
     -DTorch_ROOT="${TORCH_CMAKE_PATH}" \
     -DFETCHCONTENT_QUIET=OFF \
-    -DTRITON_JIT_USE_EXTERNAL_JSON=OFF \
-    -DTRITON_JIT_USE_EXTERNAL_FMTLIB=OFF \
+    -DTRITON_JIT_USE_EXTERNAL_JSON=ON \
+    -DTRITON_JIT_USE_EXTERNAL_FMTLIB=ON \
     -DTRITON_JIT_USE_EXTERNAL_PYBIND11=ON \
     -DTRITON_JIT_BUILD_OPERATORS=OFF \
     -DTRITON_JIT_INSTALL=ON
@@ -65,12 +68,13 @@ find %{buildroot}%{_libdir} -name "*.so*" -type f -exec patchelf --remove-rpath 
 
 %files devel
 %{_includedir}/triton_jit/
-%{_includedir}/fmt/
 %{_libdir}/cmake/TritonJIT/
-%{_libdir}/cmake/fmt/
-%{_libdir}/libfmt.so*
-%{_libdir}/pkgconfig/fmt.pc
 
 %changelog
+* Sun Jul 20 2026 The FlagOS Contributors <contact@flagos.io> - 0.1.0-2
+- Build against EPEL fmt-devel (>= 8.1.1) and json-devel instead of
+  vendoring them via FetchContent; drop the bundled fmt files and
+  replace Conflicts: fmt-devel with a Requires on it
+
 * Sun Feb 08 2026 FlagTree Project <contact@flagos.io> - 0.1.0-1
 - Initial RPM release
