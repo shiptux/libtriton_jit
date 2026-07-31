@@ -1,4 +1,12 @@
-Name:           libtriton-jit-nvidia
+# Vendor flavor and the matching CMake backend policy. Override at build
+# time for other backends, e.g.:
+#   rpmbuild --define "vendor mthreads" --define "backend MUSA" ...
+# The source already supports the MUSA (Moore Threads) and MACA (MetaX)
+# backends; only the build environment (SDK + torch) differs per vendor.
+%{!?vendor_flavor: %global vendor_flavor nvidia}
+%{!?backend: %global backend CUDA}
+
+Name:           libtriton-jit-%{vendor_flavor}
 Version:        0.1.0
 Release:        1%{?dist}
 Summary:        Triton JIT runtime library
@@ -40,6 +48,7 @@ TORCH_CMAKE_PATH=$(python3 -c "import importlib.util; s=importlib.util.find_spec
 %cmake \
     -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBACKEND=%{backend} \
     -DCMAKE_CUDA_FLAGS="-Xcompiler -fPIE" \
     -DTorch_ROOT="${TORCH_CMAKE_PATH}" \
     -DFETCHCONTENT_QUIET=OFF \

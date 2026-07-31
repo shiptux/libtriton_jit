@@ -9,6 +9,12 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 DEB_BUILD_OPTIONS ?= parallel=$(shell nproc)
 export DEB_BUILD_OPTIONS
 
+# Target backend for the C++ runtime (CMake -DBACKEND). Defaults to CUDA so
+# an unparameterized build keeps working; the packaging renderer / build
+# container overrides it per vendor (e.g. MUSA for Moore Threads, MACA for
+# MetaX). Accepted values match CMakeLists.txt's BACKEND policy list.
+DEB_TRITON_BACKEND ?= CUDA
+
 %:
 	dh $@
 
@@ -16,6 +22,7 @@ override_dh_auto_configure:
 	dh_auto_configure --buildsystem=cmake -- \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBACKEND=$(DEB_TRITON_BACKEND) \
 		-DFETCHCONTENT_FULLY_DISCONNECTED=OFF \
 		-DFETCHCONTENT_QUIET=OFF \
 		-DTRITON_JIT_USE_EXTERNAL_JSON=OFF \
