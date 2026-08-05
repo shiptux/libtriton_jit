@@ -48,8 +48,8 @@ docker build --build-arg BASE_IMAGE=nvidia/cuda:12.6.0-devel-rockylinux9 -f Dock
 ### libtriton-jit-nvidia-dev (Development Package)
 - `/usr/include/triton_jit/` - Header files
 - `/usr/lib/*/cmake/TritonJIT/` - CMake configuration files
-- `/usr/include/fmt/`, `/usr/lib/*/libfmt.a`, `/usr/lib/*/cmake/fmt/` -
-  bundled fmt (built via FetchContent; hence `Conflicts: libfmt-dev`)
+- depends on the distro fmt development package for the headers referenced by
+  the exported CMake target; fmt is not bundled in the package
 
 ## GitHub Actions
 
@@ -69,8 +69,8 @@ FlagOS NVIDIA environment:
 - PyTorch >= 2.5.0
 - Triton >= 3.1.0
 - pybind11
-- nlohmann-json
-- fmt >= 10.2.1
+- nlohmann-json >= 3.10.5
+- fmt >= 8.1.1
 
 ### Runtime Dependencies
 - PyTorch
@@ -79,6 +79,7 @@ FlagOS NVIDIA environment:
 
 ## Notes
 
-- pybind11 is supplied externally (via pip); nlohmann-json and fmt are downloaded via CMake FetchContent at build time (the distro versions are too old)
+- pybind11 is supplied externally via pip; Debian builds use `libfmt-dev` and
+  `nlohmann-json3-dev`, while RPM builds use EPEL `fmt-devel` and `json-devel`
 - RPATH is removed from the shared libraries during packaging
 - Examples are not built in the packages to reduce build time

@@ -16,6 +16,8 @@ RUN dnf install -y epel-release && \
     cmake \
     ninja-build \
     gcc-c++ \
+    fmt-devel \
+    json-devel \
     python3-devel \
     python3-pip \
     patchelf \
