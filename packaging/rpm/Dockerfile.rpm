@@ -39,6 +39,9 @@ RUN tar czf /root/rpmbuild/SOURCES/libtriton-jit-0.1.0.tar.gz \
     --transform 's,^\.,libtriton-jit-0.1.0,' \
     --exclude='.git' \
     --exclude='build' \
+    --exclude='build-*.log' \
+    --exclude='debian-packages' \
+    --exclude='rpm-packages' \
     .
 
 # Build the RPM package (--nocheck to skip dep verification)

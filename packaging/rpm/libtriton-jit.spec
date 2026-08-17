@@ -6,9 +6,13 @@
 %{!?vendor_flavor: %global vendor_flavor nvidia}
 %{!?backend: %global backend CUDA}
 
+# CUDA and PyTorch are supplied by the selected vendor environment, not the
+# RPM database. Keep automatic requirements for distro libraries and Python.
+%global __requires_exclude ^(libcuda[.]so[.]1|libtorch(_cpu|_cuda)?[.]so|libc10[.]so)[(][)][(]64bit[)]$
+
 Name:           libtriton-jit-%{vendor_flavor}
 Version:        0.1.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Triton JIT runtime library
 
 License:        MIT
@@ -80,6 +84,9 @@ find %{buildroot}%{_libdir} -name "*.so*" -type f -exec patchelf --remove-rpath 
 %{_libdir}/cmake/TritonJIT/
 
 %changelog
+* Fri Aug 07 2026 The FlagOS Contributors <contact@flagos.io> - 0.1.0-3
+- Keep automatic distro runtime dependencies while filtering vendor libraries
+
 * Wed Aug 05 2026 The FlagOS Contributors <contact@flagos.io> - 0.1.0-2
 - Build against EPEL fmt-devel and json-devel instead of vendoring them
 - Drop bundled fmt files and require fmt-devel from the devel package
