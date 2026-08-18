@@ -55,6 +55,7 @@ struct FakeBackend {
 
   static constexpr unsigned int WARP_SIZE = 32;
   inline static std::atomic<int> launch_count {0};
+  inline static std::atomic<int> shared_memory_query_count {0};
   inline static std::atomic<bool> throw_on_launch {false};
 
   static void launch_kernel(StreamType,
@@ -85,6 +86,7 @@ struct FakeBackend {
   }
 
   static unsigned int get_shared_memory(const std::string&, const std::string&) {
+    ++shared_memory_query_count;
     return 128;
   }
 
@@ -98,6 +100,7 @@ struct FakeBackend {
 
   static void reset() {
     launch_count = 0;
+    shared_memory_query_count = 0;
     throw_on_launch = false;
   }
 };
@@ -182,6 +185,7 @@ void test_reentrant_clear_keeps_current_snapshot() {
   REQUIRE(enter_count == 1);
   REQUIRE(exit_count == 1);
   REQUIRE(FakeBackend::launch_count == 2);
+  REQUIRE(FakeBackend::shared_memory_query_count == 1);
 }
 
 void test_enter_exception_prevents_launch() {
