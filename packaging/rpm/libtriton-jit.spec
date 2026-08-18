@@ -86,6 +86,7 @@ find %{buildroot}%{_libdir} -name "*.so*" -type f -exec patchelf --remove-rpath 
 %changelog
 * Fri Aug 07 2026 The FlagOS Contributors <contact@flagos.io> - 0.1.0-3
 - Keep automatic distro runtime dependencies while filtering vendor libraries
+- Pin the validated Python 3.9, PyTorch 2.8, and Triton 3.4 build stack
 
 * Wed Aug 05 2026 The FlagOS Contributors <contact@flagos.io> - 0.1.0-2
 - Build against EPEL fmt-devel and json-devel instead of vendoring them

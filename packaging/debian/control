@@ -18,7 +18,7 @@ X-Build-Environment: This package is designed to be built in a CUDA container
  environment that provides the necessary SDK and Python packages:
  .
  - CUDA toolkit (>= 12.8) from nvidia/cuda base image
- - PyTorch (>= 2.7.0) and Triton (>= 3.10.0) via pip
+ - PyTorch 2.10.0+cu128 and Triton 3.6.0 via pip
  - pybind11 via pip
  - fmt from the distro libfmt-dev (>= 8.1.1)
  - nlohmann-json from the distro nlohmann-json3-dev (>= 3.10.5)

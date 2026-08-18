@@ -77,6 +77,13 @@ FlagOS NVIDIA environment:
 - PyTorch and Triton from the matching FlagOS vendor Python environment
 - the matching vendor driver/runtime environment
 
+### Validated NVIDIA ABI Matrix
+
+| Format | CUDA | Python | PyTorch | Triton | pybind11 |
+| --- | --- | --- | --- | --- | --- |
+| DEB | 12.8 | 3.12 | 2.10.0+cu128 | 3.6.0 | 3.0.3 |
+| RPM | 12.6 | 3.9 | 2.8.0 | 3.4.0 | 3.1.0 |
+
 ## Notes
 
 - pybind11 is supplied externally via pip; Debian builds use `libfmt-dev` and

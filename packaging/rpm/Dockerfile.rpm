@@ -5,6 +5,8 @@ FROM ${BASE_IMAGE} AS builder
 # Defaults keep the historical nvidia/CUDA build.
 ARG VENDOR=nvidia
 ARG BACKEND=CUDA
+ARG PYTHON_INDEX=https://pypi.org/simple
+ARG PYTHON_PACKAGES="torch==2.8.0 triton==3.4.0 pybind11==3.1.0"
 
 # Enable EPEL and CRB for ninja-build, patchelf, etc.
 RUN dnf install -y epel-release && \
@@ -25,8 +27,9 @@ RUN dnf install -y epel-release && \
     && dnf clean all
 
 
-# Install PyTorch, Triton, and pybind11 via pip
-RUN pip3 install --no-cache-dir "torch>=2.5.0" "triton>=3.1.0" "pybind11"
+# Keep the Python ABI stack reproducible. Non-NVIDIA builders can override
+# both arguments with their vendor index and matching package versions.
+RUN pip3 install --no-cache-dir --index-url "${PYTHON_INDEX}" ${PYTHON_PACKAGES}
 
 # Setup RPM build environment
 RUN rpmdev-setuptree
